@@ -112,7 +112,6 @@ describe("XSLTemplate.js library tests suite.", function () {
         expect(typeof result).toBe('object');
     });
 
-
     it("dom2string should return string after window.XMLSerializer.serializeToString", function () {
         var xslTemplate = new XSLTemplate();
         this.XMLSerializer = window.XMLSerializer;
@@ -121,6 +120,27 @@ describe("XSLTemplate.js library tests suite.", function () {
         expect(window.XMLSerializer.prototype.serializeToString).toHaveBeenCalled();
         expect(result).toEqual('string');
         window.XMLSerializer = this.XMLSerializer;
+    });
+
+
+    describe("Tests suite for renderFromStrings method", function () {
+        var xmlString,
+            xslString,
+            xslTemplate,
+            resultRender;
+
+        beforeEach(function () {
+            xslTemplate = new XSLTemplate();
+
+            spyOn(xslTemplate, 'renderFromDOM').andReturn('string');
+            spyOn(xslTemplate, 'str2dom').andReturn('string');
+
+            resultRender = xslTemplate.renderFromStrings(xmlString, xslString);
+        });
+
+        it("renderFromStrings should call str2dom method with xmlString", function () {
+            expect(xslTemplate.str2dom).toHaveBeenCalledWith(xmlString);
+        });
     });
 
 });

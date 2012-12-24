@@ -40,6 +40,14 @@
         return new window.XSLTProcessor();
     };
 
+    XSLTemplate.prototype.renderFromStrings = function (xmlString, xslString) {
+        var DOMXML = this.str2dom(xmlString);
+    };
+
+    XSLTemplate.prototype.str2dom = function (xml) {
+
+    };
+
     // AMD define happens at the end for compatibility with AMD loaders
     if (typeof define === 'function' && define.amd) {
         define('xsltemplate', function () {
