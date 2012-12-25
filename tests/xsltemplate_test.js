@@ -124,15 +124,15 @@ describe("XSLTemplate.js library tests suite.", function () {
 
 
     describe("Tests suite for renderFromStrings method", function () {
-        var xmlString,
-            xslString,
+        var xmlString = '<xml></xml>',
+            xslString = '<xsl></xsl>',
             xslTemplate,
             resultRender;
 
         beforeEach(function () {
             xslTemplate = new XSLTemplate();
 
-            spyOn(xslTemplate, 'renderFromDOM').andReturn('string');
+            spyOn(xslTemplate, 'renderFromDOM').andReturn('renderFromDOM');
             spyOn(xslTemplate, 'str2dom').andReturn('string');
 
             resultRender = xslTemplate.renderFromStrings(xmlString, xslString);
@@ -141,6 +141,65 @@ describe("XSLTemplate.js library tests suite.", function () {
         it("renderFromStrings should call str2dom method with xmlString", function () {
             expect(xslTemplate.str2dom).toHaveBeenCalledWith(xmlString);
         });
+
+        it("renderFromStrings should call str2dom method with xslString", function () {
+            expect(xslTemplate.str2dom).toHaveBeenCalledWith(xslString);
+        });
+
+        it("renderFromStrings should call renderFormDOM", function () {
+            expect(xslTemplate.renderFromDOM).toHaveBeenCalled();
+        });
+
+        it("renderFromStrings should return result of renderFormDOM", function () {
+            expect(resultRender).toEqual('renderFromDOM');
+        });
+    });
+
+    it("str2dom should make DOM from string via window.DOMParser in non IE browsers", function () {
+        this.DOMParser = window.DOMParser;
+        window.DOMParser = function () {};
+        window.DOMParser.prototype.parseFromString = function () {};
+        spyOn(window.DOMParser.prototype, 'parseFromString').andReturn('DOM');
+        var xslTemplate = new XSLTemplate(),
+            res = xslTemplate.str2dom('<xml/>');
+        expect(window.DOMParser.prototype.parseFromString).toHaveBeenCalledWith('<xml/>', 'text/xml');
+        expect(res).toEqual('DOM');
+        window.DOMParser = this.DOMParser;
+    });
+
+    it("str2dom should make DOM from string via ActiveXObject('Microsoft.XMLDOM') in IE", function () {
+        this.ActiveXObject = window.ActiveXObject;
+        this.DOMParser = window.DOMParser;
+
+        window.DOMParser = false;
+
+        window.ActiveXObject = function () {};
+        spyOn(window, 'ActiveXObject');
+
+        window.ActiveXObject.prototype.loadXML = function () {};
+        spyOn(window.ActiveXObject.prototype, 'loadXML');
+
+        var xslTemplate = new XSLTemplate();
+
+        xslTemplate.str2dom('<xml/>');
+
+        expect(window.ActiveXObject).toHaveBeenCalledWith('Microsoft.XMLDOM');
+        expect(window.ActiveXObject.prototype.loadXML).toHaveBeenCalledWith('<xml/>');
+        window.ActiveXObject = this.ActiveXObject;
+        window.DOMParser = this.DOMParser;
+    });
+
+    it("renderFromString in action, xsl template should apply on xml", function () {
+        this.ActiveXObject = window.ActiveXObject;
+        window.ActiveXObject = false;
+        var xslTemplate = new XSLTemplate(),
+            xml = '<?xml version="1.0" encoding="UTF-8"?>',
+            xsl = '<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">' +
+                  '<xsl:output encoding="UTF-8" method="html" omit-xml-declaration="yes" indent="no"/>'+
+                  '<xsl:template match="/"><html>result</html></xsl:template></xsl:stylesheet>',
+            result = xslTemplate.renderFromStrings(xml, xsl);
+        expect(result.indexOf('result') !== -1).toEqual(true);
+        window.ActiveXObject = this.ActiveXObject;
     });
 
 });

@@ -6,7 +6,11 @@
  * XSLTemplate.js support AMD.
  *
  * @example
- * //TODO: write example code for XSLTemplate.js
+ * <code>
+ *     var xslTemplate = new XSLTemplate();
+ *     //render strings
+ *     xslTemplate.renderFromStrings('<xml/>', '<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"></xsl:stylesheet>');
+ * </code>
  *
  * @author Andrey Kucherenko <andrey@kucherenko.org>
  */
@@ -26,6 +30,7 @@
             var xsltProcessor = this.makeXSLTProcessor();
             xsltProcessor.importStylesheet(xslObject);
             var resultDocument = xsltProcessor.transformToDocument(xmlObject);
+            console.log(resultDocument);
             result = this.dom2string(resultDocument);
         }
         return result;
@@ -41,11 +46,29 @@
     };
 
     XSLTemplate.prototype.renderFromStrings = function (xmlString, xslString) {
-        var DOMXML = this.str2dom(xmlString);
+        console.log(xmlString);
+        console.log(xslString);
+        var xmlObject = this.str2dom(xmlString),
+            xslObject = this.str2dom(xslString);
+
+        console.log(xmlObject);
+        console.log(xslObject);
+
+        return this.renderFromDOM(xmlObject, xslObject);
     };
 
     XSLTemplate.prototype.str2dom = function (xml) {
+        var parser, result;
+        if (window.DOMParser) {
+            parser = new window.DOMParser();
+            result = parser.parseFromString(xml, 'text/xml');
+        } else if (window.ActiveXObject) {
+            result = new window.ActiveXObject('Microsoft.XMLDOM');
+            result.async = "false";
+            result.loadXML(xml);
+        }
 
+        return result;
     };
 
     // AMD define happens at the end for compatibility with AMD loaders
@@ -53,6 +76,8 @@
         define('xsltemplate', function () {
             return XSLTemplate;
         });
+    } else {
+        window.XSLTemplate = XSLTemplate;
     }
 
 }).call(this);
