@@ -30,7 +30,6 @@
             var xsltProcessor = this.makeXSLTProcessor();
             xsltProcessor.importStylesheet(xslObject);
             var resultDocument = xsltProcessor.transformToDocument(xmlObject);
-            console.log(resultDocument);
             result = this.dom2string(resultDocument);
         }
         return result;
@@ -46,14 +45,8 @@
     };
 
     XSLTemplate.prototype.renderFromStrings = function (xmlString, xslString) {
-        console.log(xmlString);
-        console.log(xslString);
         var xmlObject = this.str2dom(xmlString),
             xslObject = this.str2dom(xslString);
-
-        console.log(xmlObject);
-        console.log(xslObject);
-
         return this.renderFromDOM(xmlObject, xslObject);
     };
 
